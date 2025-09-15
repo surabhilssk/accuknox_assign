@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { addWidget } from "../features/widgets/widgetsSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { addWidget, removeWidget } from "../features/widgets/widgetsSlice";
 import { LucideX } from "lucide-react";
 
 interface SidebarProps {
@@ -19,6 +19,16 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [selectedCategory, setSelectedCategory] = useState(categories[0].id);
   const dispatch = useDispatch();
 
+  const widgets = useSelector((state: any) =>
+    state.widgets.categories.flatMap((cat: any) =>
+      cat.widgets.map((widget: any) => ({
+        ...widget,
+        categoryId: cat.id,
+        categoryName: cat.name,
+      }))
+    )
+  );
+
   const handleAddWidget = () => {
     if (!widgetName || !widgetDescription) return;
     dispatch(
@@ -36,12 +46,21 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     onClose();
   };
 
+  const handleCheckboxChange = (
+    widgetId: number,
+    categoryId: number,
+    checked: boolean
+  ) => {
+    if (!checked) {
+      dispatch(removeWidget({ categoryId, widgetId }));
+    }
+  };
+
   return (
     <div
       className={`fixed top-0 right-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 z-50
         ${isOpen ? "translate-x-0" : "translate-x-full"}`}
     >
-      {/* Header */}
       <div className="flex justify-between items-center p-4 border-b">
         <h2 className="text-lg font-bold">Add Widget</h2>
         <button onClick={onClose}>
@@ -49,7 +68,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         </button>
       </div>
 
-      {/* Body (form for new widget) */}
       <div className="p-4">
         <select
           className="border p-2 w-full mb-3 rounded"
@@ -76,11 +94,37 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           onChange={(e) => setWidgetDescription(e.target.value)}
         />
         <button
-          className="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-blue-700"
+          className="bg-blue-500 text-white px-4 py-2 rounded-sm w-full hover:bg-blue-700"
           onClick={handleAddWidget}
         >
           Add Widget
         </button>
+
+        <div className="mt-6">
+          <h3 className="font-semibold mb-2">Widgets</h3>
+          <ul>
+            {widgets.map((widget: any) => (
+              <li key={widget.id} className="flex items-center mb-2">
+                <input
+                  type="checkbox"
+                  checked={true}
+                  onChange={(e) =>
+                    handleCheckboxChange(
+                      widget.id,
+                      widget.categoryId,
+                      e.target.checked
+                    )
+                  }
+                  className="mr-2 accent-blue-500 cursor-pointer"
+                />
+                <span className="font-medium">{widget.name}</span>
+              </li>
+            ))}
+            {widgets.length === 0 && (
+              <li className="text-gray-400 text-sm">No widgets available.</li>
+            )}
+          </ul>
+        </div>
       </div>
     </div>
   );

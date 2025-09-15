@@ -1,10 +1,12 @@
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { removeWidget } from "../features/widgets/widgetsSlice";
 import AppBar from "./AppBar";
 import CspmWidgets from "./CspmWidgets";
 import CwppWidgets from "./CwppWidgets";
 import SubMenu from "./SubMenu";
 
 export default function Dashboard() {
+  const dispatch = useDispatch();
   const categories = useSelector((state: any) => state.widgets.categories);
 
   const cspmCategory = categories.find(
@@ -28,6 +30,11 @@ export default function Dashboard() {
               key={w.id}
               widgetName={w.name}
               widgetDescription={w.text}
+              handleCspmOnclick={() => {
+                dispatch(
+                  removeWidget({ categoryId: cspmCategory.id, widgetId: w.id })
+                );
+              }}
             />
           ))}
         </div>
@@ -40,6 +47,11 @@ export default function Dashboard() {
               key={w.id}
               widgetName={w.name}
               widgetDescription={w.text}
+              handleCwppOnclick={() => {
+                dispatch(
+                  removeWidget({ categoryId: cwppCategory.id, widgetId: w.id })
+                );
+              }}
             />
           ))}
         </div>
